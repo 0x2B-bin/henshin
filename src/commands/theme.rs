@@ -1,5 +1,5 @@
 use crate::{appcontext::AppContext, cli::ThemeCommands};
-use anyhow::Result;
+use anyhow::{Result, bail};
 
 pub fn handle_comamnd(ctx: AppContext, cmd: ThemeCommands) -> Result<()> {
     match cmd {
@@ -53,6 +53,12 @@ fn delete_theme(ctx: AppContext, name: &str) -> Result<()> {
 }
 
 fn load_theme(ctx: AppContext, name: &str) -> Result<()> {
+    let exist = ctx.list_themes()?.iter().any(|theme| theme.as_str() == name);
+
+    if !exist {
+        bail!("'{}' theme does not exist", name);
+    }
+
     ctx.switch_current(name)?;
     println!("[ \x1b[92mOK\x1b[0m ] Switched theme to '{name}'");
     ctx.create_misisng_theme_files()?;
